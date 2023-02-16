@@ -1,0 +1,46 @@
+Description: Metastore Template , 09/06/2020 - FSS
+
+# Stack Name: Nombre-Apellido-Datalab-Metastore-Stack
+
+Parameters:
+  Proyecto:
+    Description: proyecto indeed
+    Default: tfm
+    Type: String
+    
+  Entorno:
+    Description: Seleccione el entorno
+    Default: dev
+    Type: String
+    AllowedValues:
+    - dev
+    - int
+    - pre
+    - prod
+  Estudiante:
+    Description:  grupo3-indeed
+    Type: String
+
+
+Resources:
+  WebdataGlueDatabase:
+    Type: AWS::Glue::Database
+    Properties: 
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput: 
+        Name: !Sub ${Estudiante}-${Proyecto}-webdata-${Entorno}
+        Description: Base de datos indeed
+        LocationUri:
+          Fn::Join:
+          - ''
+          - - 's3://'
+            - Fn::ImportValue: !Sub ${Estudiante}-${Proyecto}-landing-bucket-id-${Entorno}
+            - '/webdata'
+
+Outputs:
+
+  WebdataGlueDatabaseId:
+    Description: Salida del ID del recurso.
+    Value: !Ref WebdataGlueDatabase
+    Export:
+      Name: !Sub ${Estudiante}-${Proyecto}-webdata-database-id-${Entorno}

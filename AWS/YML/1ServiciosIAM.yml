@@ -1,0 +1,127 @@
+Description: IAM Template , 09/06/2020 - FSS
+
+# Stack Name: Grupo3-Indeed-Datalab-IAM-Stack
+
+Parameters:
+  Proyecto:
+    Description: proyecto indeed
+    Default: tfm
+    Type: String
+    
+  Entorno:
+    Description: Seleccione el entorno
+    Default: dev
+    Type: String
+    AllowedValues:
+    - dev
+    - int
+    - pre
+    - prod
+  Estudiante:
+    Description:  grupo3-indeed
+    Type: String
+
+
+Resources:
+  GlueServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Rol para Glue
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - glue.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+      - arn:aws:iam::aws:policy/AWSGlueSchemaRegistryFullAccess
+      - arn:aws:iam::aws:policy/AmazonS3FullAccess
+      Path: /
+      RoleName:
+        Fn::Sub: ${Estudiante}-${Proyecto}-glue-service-role-${Entorno}
+
+  StepFunctionsServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Rol para Step Functions
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - states.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+      - arn:aws:iam::aws:policy/AWSGlueSchemaRegistryFullAccess
+      - arn:aws:iam::aws:policy/AmazonS3FullAccess
+      - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+      - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+      - arn:aws:iam::aws:policy/AmazonAthenaFullAccess
+      - arn:aws:iam::aws:policy/CloudWatchFullAccess
+      Path: /
+      RoleName:
+        Fn::Sub: ${Estudiante}-${Proyecto}-step-functions-service-role-${Entorno}    
+
+  LambdaServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Rol para Lambda
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AmazonS3FullAccess
+      - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+      - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+      - arn:aws:iam::aws:policy/CloudWatchFullAccess
+      Path: /
+      RoleName:
+        Fn::Sub: ${Estudiante}-${Proyecto}-lambda-service-role-${Entorno}
+
+Outputs:
+
+  GlueServiceRoleId:
+    Description:  Salida del ID del recurso.
+    Value: !Ref GlueServiceRole
+    Export:
+      Name: !Sub ${Estudiante}-${Proyecto}-glue-service-role-id-${Entorno}
+  
+  GlueServiceRoleArn:
+    Description:  Salida del Arn del recurso
+    Value: !GetAtt GlueServiceRole.Arn
+    Export:
+      Name: !Sub ${Estudiante}-${Proyecto}-glue-service-role-arn-${Entorno}
+
+  StepFunctionsServiceRoleId:
+    Description:  Salida del ID del recurso.
+    Value: !Ref StepFunctionsServiceRole
+    Export:
+      Name: !Sub ${Estudiante}-${Proyecto}-step-functions-service-role-id-${Entorno}
+  
+  StepFunctionsServiceRoleArn:
+    Description:  Salida del Arn del recurso
+    Value: !GetAtt StepFunctionsServiceRole.Arn
+    Export:
+      Name: !Sub ${Estudiante}-${Proyecto}-step-functions-service-role-arn-${Entorno}
+
+  LambdaServiceRoleId:
+    Description:  Salida del ID del recurso.
+    Value: !Ref LambdaServiceRole
+    Export:
+      Name: !Sub ${Estudiante}-${Proyecto}-lambda-service-role-id-${Entorno}
+  
+  LambdaServiceRoleArn:
+    Description:  Salida del Arn del recurso
+    Value: !GetAtt LambdaServiceRole.Arn
+    Export:
+      Name: !Sub ${Estudiante}-${Proyecto}-lambda-service-role-arn-${Entorno}

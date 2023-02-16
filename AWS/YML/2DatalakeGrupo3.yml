@@ -1,0 +1,79 @@
+Description: Datalake Template , 09/06/2020 - FSS
+
+# Stack Name: Nombre-Apellido1-Datalab-Datalake-Stack
+
+Parameters:
+  Proyecto:
+    Description: proyecto indeed
+    Default: tfm
+    Type: String
+    
+  Entorno:
+    Description: Seleccione el entorno
+    Default: dev
+    Type: String
+    AllowedValues:
+    - dev
+    - int
+    - pre
+    - prod
+  Estudiante:
+    Description:  grupo3-indeed
+    Type: String
+
+
+Resources:
+
+  LandingS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub ${Estudiante}-${Proyecto}-landing-${Entorno}
+
+  RefinedS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub ${Estudiante}-${Proyecto}-refined-${Entorno}
+
+  AthenaResultsS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub ${Estudiante}-${Proyecto}-athena-results-${Entorno}
+
+
+Outputs:
+
+  LandingS3BucketId:
+    Description: ID del recurso (= nombre, en este caso).
+    Value: !Ref LandingS3Bucket
+    Export:
+      Name: !Sub ${Estudiante}-${Proyecto}-landing-bucket-id-${Entorno}
+
+  LandingS3BucketArn:
+    Description: Arn del recurso.
+    Value: !GetAtt LandingS3Bucket.Arn 
+    Export:
+      Name: !Sub ${Estudiante}-${Proyecto}-landing-bucket-arn-${Entorno}
+
+  RefinedS3BucketId:
+    Description: ID del recurso (= nombre, en este caso).
+    Value: !Ref RefinedS3Bucket
+    Export:
+      Name: !Sub ${Estudiante}-${Proyecto}-refined-bucket-id-${Entorno}
+
+  RefinedS3BucketArn:
+    Description: Arn del recurso.
+    Value: !GetAtt RefinedS3Bucket.Arn 
+    Export:
+      Name: !Sub ${Estudiante}-${Proyecto}-refined-bucket-arn-${Entorno}
+
+  AthenaResultsS3BucketId:
+    Description: ID del recurso (= nombre, en este caso).
+    Value: !Ref AthenaResultsS3Bucket
+    Export:
+      Name: !Sub ${Estudiante}-${Proyecto}-athena-results-bucket-id-${Entorno}
+
+  LandingS3BucketS3BucketArn:
+    Description: Arn del recurso.
+    Value: !GetAtt AthenaResultsS3Bucket.Arn 
+    Export:
+      Name: !Sub ${Estudiante}-${Proyecto}-athena-results-bucket-arn-${Entorno}

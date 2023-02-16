@@ -1,0 +1,121 @@
+Description: Metastore Template , 09/06/2020 - FSS
+
+# Stack Name: Nombre-Apellido1-Datalab-Metastore-Stack
+
+Parameters:
+  Proyecto:
+    Description: proyecto indeed
+    Default: tfm
+    Type: String
+    
+  Entorno:
+    Description: Seleccione el entorno
+    Default: dev
+    Type: String
+    AllowedValues:
+    - dev
+    - int
+    - pre
+    - prod
+  Estudiante:
+    Description:  Indique su nombre y primer apellido en minusculas, separado por hyphens (-). Por ejemplo pablo-alfonso.
+    Type: String
+
+
+Resources:
+  WebdataGlueDatabase:
+    Type: AWS::Glue::Database
+    Properties: 
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput: 
+        Name: !Sub ${Estudiante}-${Proyecto}-webdata-${Entorno}
+        Description: Base de datos para guardar datos de web en el proyecto DataLab.
+        LocationUri:
+          Fn::Join:
+          - ''
+          - - 's3://'
+            - Fn::ImportValue: !Sub ${Estudiante}-${Proyecto}-landing-bucket-id-${Entorno}
+            - '/webdata'
+  WebScrapingGlueCrawler: 
+    Type: AWS::Glue::Crawler
+    Properties: 
+      Name: !Sub ${Estudiante}-${Proyecto}-webdata-${Entorno}
+      Role: !ImportValue 
+        Fn::Sub:  ${Estudiante}-${Proyecto}-glue-service-role-id-${Entorno}
+      DatabaseName: !Ref WebdataGlueDatabase
+      SchemaChangePolicy: 
+        UpdateBehavior: UPDATE_IN_DATABASE
+        DeleteBehavior: DELETE_FROM_DATABASE
+      Targets: 
+        S3Targets:
+        - Path:
+            Fn::Join:
+            - ''
+            - - 's3://'
+              - Fn::ImportValue: !Sub ${Estudiante}-${Proyecto}-landing-bucket-id-${Entorno}
+              - '/webdata/webscraping'
+  WebScrapingGlueTable:
+    Type: AWS::Glue::Table
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseName: !Ref WebdataGlueDatabase
+      TableInput:
+        Name: indeedscrap
+        TableType: EXTERNAL_TABLE
+        Parameters: {"typeOfData": "file","areColumnsQuoted":"false","classification":"csv","columnsOrdered":"true","compressionType":"none","delimiter":";","skip.header.line.count":"1"}
+        StorageDescriptor:
+          Location: 
+            Fn::Join:
+            - ''
+            - - 's3://'
+              - Fn::ImportValue: !Sub ${Estudiante}-${Proyecto}-landing-bucket-id-${Entorno}
+              - '/webdata/webscraping'
+          InputFormat: org.apache.hadoop.mapred.TextInputFormat
+          OutputFormat: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+          SerdeInfo:
+            Parameters: {"field.delim":",","serialization.format":";","line.delim":"\\n"}
+            SerializationLibrary: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          Columns:
+          - Name: id
+            Type: bigint
+          - Name: puesto
+            Type: string 
+          - Name: ubicacion
+            Type: string
+          - Name: compañia
+            Type: string
+          - Name: publicado
+            Type: string
+          - Name: today
+            Type: string
+          - Name: jk
+            Type: string
+          - Name: efccid
+            Type: string
+          - Name: srcid
+            Type: string
+          - Name: cmpid
+            Type: string
+
+Outputs:
+
+  WebdataGlueDatabaseId:
+    Description: ID del recurso (= nombre, en este caso).
+    Value: !Ref WebdataGlueDatabase
+    Export:
+      Name: !Sub ${Estudiante}-${Proyecto}-webdata-database-id-${Entorno}
+
+  WebScrapingGlueCrawlerId:
+    Description: ID del recurso (= nombre, en este caso).
+    Value: !Ref WebScrapingGlueCrawler
+    Export:
+      Name: !Sub ${Estudiante}-${Proyecto}-webscraping-crawler-id-${Entorno}
+
+  WebScrapingGlueTableId:
+    Description: ID del recurso (= nombre, en este caso).
+    Value: !Ref WebScrapingGlueTable
+    Export:
+      Name: !Sub ${Estudiante}-${Proyecto}-webscraping-table-id-${Entorno}  
+
+
+
